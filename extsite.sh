@@ -58,6 +58,18 @@ likes=$(grep -oPm 1 'along with \K\d{1,3}(,\d{3})*' site.html | head -n 1 | sed 
 # Extrai a descrição do vídeo
 description=$(grep -oP '<meta itemprop="description" content="\K[^"]+' site.html)
 
+# Cria um arquivo de texto com todas as informações extraídas
+info_filename=$(echo "${title// /_}_${datetime}_INFOS.txt")
+{
+    echo "Título do vídeo: $title"
+    echo "Autor: $author"
+    echo "Data de publicação: $date_published"
+    echo "Número de visualizações: $views"
+    echo "Número de likes: $likes"
+    echo "Descrição: $description"
+} > "$info_filename"
+echo "Arquivo de informações criado: $info_filename"
+
 # Apresenta o checklist e armazena as opções selecionadas em 'itens'
 itens=$(dialog --title "DADOS EXTRAÍDOS" --checklist "Escolha as informações extraídas do vídeo que são de seu interesse" 15 55 6 \
 "Título" "Título do vídeo" ON \
@@ -81,7 +93,7 @@ filename=$(echo "${title// /_}_${datetime}.html")
 mv site.html "$filename"
 
 # Compacta o arquivo renomeado para o formato .zip
-zip "${filename}.zip" "$filename"
+zip "${filename}.zip" "$filename" "$info_filename"
 
 # Cria uma pasta backup se ela não existir
 mkdir -p backup
@@ -90,7 +102,7 @@ mkdir -p backup
 mv "${filename}.zip" backup/
 
 # Remove o arquivo HTML renomeado
-rm "$filename"
+rm "$filename" "$info_filename"
 
 # Confirmação da operação
 dialog --title "FIM DA EXECUÇÃO" --msgbox "Arquivo salvo como ${filename}.zip e movido para a pasta backup." 10 50
